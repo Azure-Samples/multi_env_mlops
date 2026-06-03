@@ -3,7 +3,6 @@ type: command
 
 name: readmission_train
 display_name: Train Model
-version: 1
 description: Train a GradientBoosting classifier with MLflow tracking.
 
 code: ../../../data_science
@@ -19,7 +18,7 @@ command: >-
   --min_samples_leaf ${{inputs.min_samples_leaf}}
   --subsample ${{inputs.subsample}}
 
-environment: azureml:readmission-train-env:1
+environment: azureml:readmission-train-env@latest
 
 inputs:
   train_data:

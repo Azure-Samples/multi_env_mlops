@@ -3,7 +3,6 @@ type: command
 
 name: readmission_evaluate
 display_name: Evaluate Model
-version: 1
 description: Evaluate the trained model on the test set and write a deploy gate flag.
 
 code: ../../../data_science
@@ -14,7 +13,7 @@ command: >-
   --test_data ${{inputs.test_data}}
   --evaluation_output ${{outputs.evaluation_output}}
 
-environment: azureml:readmission-train-env:1
+environment: azureml:readmission-train-env@latest
 
 inputs:
   model_name:

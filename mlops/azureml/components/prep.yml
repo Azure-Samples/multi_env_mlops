@@ -3,7 +3,6 @@ type: command
 
 name: readmission_prep
 display_name: Prep Data
-version: 1
 description: Clean, one-hot encode, and split raw patient data into train/val/test sets.
 
 code: ../../../data_science
@@ -14,7 +13,7 @@ command: >-
   --val_data ${{outputs.val_data}}
   --test_data ${{outputs.test_data}}
 
-environment: azureml:readmission-train-env:1
+environment: azureml:readmission-train-env@latest
 
 inputs:
   raw_data:
