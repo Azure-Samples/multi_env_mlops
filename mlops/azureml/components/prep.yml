@@ -14,7 +14,7 @@ command: >-
   --val_data ${{outputs.val_data}}
   --test_data ${{outputs.test_data}}
 
-environment: azureml://registries/readmit-registry/environments/readmission-train-env/labels/latest
+environment: azureml:readmission-train-env:1
 
 inputs:
   raw_data:

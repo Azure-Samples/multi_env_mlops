@@ -4,7 +4,7 @@ Predict 30-day hospital readmission risk with Bicep IaC, three-environment model
 
 ## Problem Statement
 
-Hospital readmissions within 30 days are a key quality metric in healthcare — they indicate gaps in care transitions, drive significant costs, and are subject to regulatory penalties. Building a predictive model is only part of the solution: deploying it safely across isolated environments with proper governance, auditability, and network controls is where the real engineering challenge lies.
+Hospital readmissions within 30 days are a key quality metric in healthcare — they indicate gaps in care transitions, drive significant costs, and are subject to regulatory penalties. Building a predictive model is only part of the solution: deploying it safely across isolated environments with proper governance and auditability is where the real engineering challenge lies.
 
 This lab focuses on the **infrastructure and operations** side of MLOps. The model itself (a Gradient Boosting classifier on synthetic patient data) is intentionally simple — the value is in the end-to-end deployment pattern.
 
@@ -14,10 +14,11 @@ This lab focuses on the **infrastructure and operations** side of MLOps. The mod
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                       GitHub Actions CI/CD (OIDC)                          │
 │                                                                            │
-│  deploy-infra.yml        train.yml               deploy.yml               │
+│  multi-env-deploy-      multi-env-              multi-env-               │
+│  infra.yml              train.yml               deploy.yml               │
 │  ┌──────────────┐    ┌──────────────────┐   ┌──────────────────────────┐  │
-│  │ Lint+What-If │    │ Register → Train  │   │ Deploy Test → Integrate  │  │
-│  │  → Deploy    │    │  Dev → Train Test │   │  → Promote → Deploy Prod │  │
+│  │ Lint+What-If │    │ Register → Train  │   │ Train Test → Integrate   │  │
+│  │  → Deploy    │    │  Dev → Promote   │   │  → Promote → Deploy Prod │  │
 │  └──────────────┘    └──────────────────┘   └──────────────────────────┘  │
 └────────────────────────────────────────────────────────────────────────────┘
         │                   │             │           │              │
@@ -57,7 +58,7 @@ This lab focuses on the **infrastructure and operations** side of MLOps. The mod
 | **Components** | `mlops/azureml/components/` | Reusable component definitions registered in the shared ML Registry — all workspaces consume the same versioned code |
 | **CI/CD** | `.github/workflows/` | GitHub Actions with OIDC: infra deploy, training pipeline, and gated promote + deploy |
 | **Data** | `scripts/` | Standalone data generation and upload to workspace datastores |
-| **Exploration** | `notebooks/` | EDA notebook for exploring generated patient data |
+| **Notebooks** | `notebooks/` | EDA, interactive training, and manual deployment walkthroughs (all work locally with synthetic data) |
 | **Observability** | Built-in | Log Analytics, App Insights, diagnostic settings on every workspace |
 
 ## Prerequisites
@@ -228,8 +229,8 @@ In production, replace this with your real data ingestion pipeline (e.g. ADF, Da
 
 The GitHub Actions workflows handle everything from here:
 
-1. **`multi-env-train.yml`** (manual dispatch via `workflow_dispatch`) — registers components + environment to the shared registry → validates pipeline on dev → promotes components to registry
-2. **`multi-env-deploy.yml`** (auto-triggers on train success, or manual dispatch) — retrains on test (full data) → deploys to test endpoint → integration tests → promotes model to shared registry → deploys to prod
+1. **`multi-env-train.yml`** (manual dispatch via `workflow_dispatch`) — registers components locally in dev → validates pipeline on dev (synthetic data) → approval gate → promotes components + environment to shared registry
+2. **`multi-env-deploy.yml`** (auto-triggers on train success, or manual dispatch) — retrains on test (full data) → deploys to test endpoint → integration tests (schema + latency) → approval gate → promotes model to shared registry → deploys to prod
 
 > **First run?** You must run `train.yml` at least once before `deploy.yml` — it needs a trained model to deploy.
 
@@ -258,10 +259,14 @@ The GitHub Actions workflows handle everything from here:
 ├── scripts/
 │   └── generate_and_upload_data.py      # Generate synthetic data & register as data asset
 ├── notebooks/
-│   └── eda.ipynb                        # Exploratory data analysis
+│   ├── eda.ipynb                        # Exploratory data analysis
+│   ├── train.ipynb                      # Interactive training walkthrough (local)
+│   └── deploy.ipynb                     # Manual endpoint deployment workshop
 ├── infra/
 │   ├── main.bicep                       # Per-environment orchestrator
 │   ├── shared.bicep                     # Shared ML Registry orchestrator
+│   ├── shared.json                      # ARM parameter file for shared deployment
+│   ├── endpoint-sub-roles.bicep         # Subscription-scoped UAMI roles (AcrPull + Storage Blob Data Reader)
 │   ├── parameters/
 │   │   ├── shared.bicepparam            # Registry params
 │   │   ├── dev.bicepparam
@@ -300,10 +305,11 @@ The GitHub Actions workflows handle everything from here:
 │               └── online-deployment.yml# Blue deployment from registry
 ├── data/
 │   └── sample-request.json              # Example inference payload
-└── .github/workflows/
-    ├── multi-env-deploy-infra.yml       # Bicep lint → what-if → deploy
-    ├── multi-env-train.yml              # Register components → train dev → train test
-    └── multi-env-deploy.yml             # Deploy test → integration tests → promote → deploy prod
+└── .github/
+    └── workflows/
+        ├── multi-env-deploy-infra.yml   # Bicep lint → what-if → deploy (per environment)
+        ├── multi-env-train.yml          # Register components (dev) → train dev → promote to registry
+        └── multi-env-deploy.yml         # Train test → deploy test → integration tests → promote model → deploy prod
 ```
 
 ## Tech Stack

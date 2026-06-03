@@ -19,7 +19,7 @@ command: >-
   --min_samples_leaf ${{inputs.min_samples_leaf}}
   --subsample ${{inputs.subsample}}
 
-environment: azureml://registries/readmit-registry/environments/readmission-train-env/labels/latest
+environment: azureml:readmission-train-env:1
 
 inputs:
   train_data:
