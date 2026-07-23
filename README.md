@@ -14,22 +14,22 @@ This lab focuses on the **infrastructure and operations** side of MLOps. The mod
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                       GitHub Actions CI/CD (OIDC)                          │
 │                                                                            │
-│  multi-env-deploy-      multi-env-              multi-env-               │
-│  infra.yml              train.yml               deploy.yml               │
-│  ┌──────────────┐    ┌──────────────────┐   ┌──────────────────────────┐  │
-│  │ Lint+What-If │    │ Register → Train  │   │ Train Test → Integrate   │  │
-│  │  → Deploy    │    │  Dev → Promote   │   │  → Promote → Deploy Prod │  │
-│  └──────────────┘    └──────────────────┘   └──────────────────────────┘  │
+│  multi-env-deploy-      multi-env-              multi-env-                 |
+│  infra.yml              train.yml               deploy.yml                 │
+│  ┌──────────────┐    ┌──────────────────┐   ┌──────────────────────────┐   │
+│  │ Lint+What-If │    │ Register → Train │   │ Train Test → Integrate   │   │
+│  │  → Deploy    │    │  Dev → Promote   │   │  → Promote → Deploy Prod │   │
+│  └──────────────┘    └──────────────────┘   └──────────────────────────┘   │
 └────────────────────────────────────────────────────────────────────────────┘
         │                   │             │           │              │
         ▼                   ▼             ▼           ▼              ▼
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐
-│rg-readmit-   │ │rg-readmit-   │ │rg-readmit-   │ │rg-readmit-prod  │
+│ rg-readmit-  | │ rg-readmit-  │ │ rg-readmit-  │ │ rg-readmit-prod  │
 │  shared      │ │  dev         │ │  test        │ │                  │
 │              │ │              │ │              │ │ ML Workspace     │
 │ ML Registry  │ │ ML Workspace │ │ ML Workspace │ │ └─ Online        │
-│ (model       │ │ ├─ Compute   │ │ ├─ Compute   │ │    Endpoint     │
-│  promotion)  │ │ ├─ Pipeline  │ │ ├─ Pipeline  │ │ (inference only)│
+│ (model       │ │ ├─ Compute   │ │ ├─ Compute   │ │    Endpoint      │
+│  promotion)  │ │ ├─ Pipeline  │ │ ├─ Pipeline  │ │ (inference only) │
 │              │ │ └─ Register  │ │ └─ Endpoint  │ │                  │
 └──────┬───────┘ └──────────────┘ └──────┬───────┘ └────────▲─────────┘
        │                                 │                   │
